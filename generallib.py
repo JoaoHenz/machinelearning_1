@@ -1,0 +1,3 @@
+def callexit():
+    print('')
+    exit()
