@@ -11,7 +11,10 @@ from generallib import *
 #ntreeparameter = sys.argv[2]
 #try:
     #dataset = readdataset(sys.argv[3])
-dataset = readdataset("dadosBenchmark_validacaoAlgoritmoAD.csv")  
+dataset = readdataset("dadosBenchmark_validacaoAlgoritmoAD.csv") 
+
+# tree = create_tree(dataset)
+
 #except:
 	#print(sys.argv[3])
 	#print('something wrong with the dataset path!')

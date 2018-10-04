@@ -4,7 +4,7 @@ class Attribute:
 	def __init__(self, name, element_list):
 		self.name = name;
 		self.element_list = element_list
-
+		self.possib_number = 0  # numero de valores que o atributo pode assumir
 
 
 class Dataset:
@@ -38,22 +38,21 @@ def readdataset(datapath):
 				
 				dataset.attnum = len(row)
 
-				print("ue")
-
 				for j in range(dataset.attnum):
 					dataset.attlist.append(Attribute(row[j], [])) # instancia cada atributo
 
 				i+=1
-
 				
-
 			else:
 				for j in range(dataset.attnum):
 					dataset.attlist[j].element_list.append(row[j]) # enche a lista de atributos
 			
-	#for i in range(dataset.attnum):
-	#		print(dataset.attlist[i].element_list)  # pra debug
+	for i in range(dataset.attnum):
+		dataset.attlist[i].possib_number = len(set(dataset.attlist[i].element_list))
+	#	print(dataset.attlist[i].possib_number)
+	#	print(dataset.attlist[i].element_list)  # pra debug
 
 	return dataset
 
 
+# def create_tree(dataset):
