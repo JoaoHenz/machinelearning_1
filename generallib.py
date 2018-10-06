@@ -120,7 +120,7 @@ def create_tree(dataset, att_list):
         class_array = numpy.asarray(dataset[:,-1])
         class_array = numpy.delete(class_array, 0) # pra tirar o header da lista
 
-        unique, counts = numpy.unique(class_array),  return_counts = True) # counts possui a frenquencia de cada classe
+        unique, counts = numpy.unique((class_array),  return_counts = True) # counts possui a frenquencia de cada classe
         max_index, = numpy.where(counts == max(counts)) # pega o index das classe mais frenquente
         new_node.info = max_index[0] # contem a classe mais frequente no dataset
 
@@ -140,7 +140,7 @@ def create_tree(dataset, att_list):
 
                 class_array = numpy.asarray(dataset[:,-1])
                 class_array = numpy.delete(class_array, 0)
-                unique, counts = numpy.unique(class_array),  return_counts = True)
+                unique, counts = numpy.unique((class_array),  return_counts = True)
                 max_index, = numpy.where(counts == max(counts))
                 new_node.info1 = max_index[0] # contem a classe mais frequente no dataset
 
