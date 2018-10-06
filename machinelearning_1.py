@@ -1,6 +1,6 @@
 import sys
+import traceback
 from generallib import *
-import random
 
 numberofargs = 4+1
 if len(sys.argv) < numberofargs:
@@ -15,11 +15,16 @@ ntreeparameter = sys.argv[2]
 try:
     dataset = readdataset(datasetpath)
     print('this is the dataset:\n',dataset)
+    bootstraplist = create_bootstraplist(dataset,3)
+    print('this is the bootstrap list:\n')
+    for i in range(0,len(bootstraplist)):
+        print('\nBootstrap ',i,':\nTraining set:\n',bootstraplist[i].trainingset,'\nTest set:\n',bootstraplist[i].testset)
     # tree = create_tree(dataset)
 
 except Exception as e:
-	print('Error!\n',e)
-	callexit()
+    print('\n',traceback.format_exc())
+    #print('\nError on line {}:'.format(sys.exc_info()[-1].tb_lineno),'\n', type(e).__name__, e)
+    callexit()
 
 
 

@@ -1,5 +1,10 @@
 import csv
 import numpy
+from random import *
+import random
+
+testratio = 0.3
+
 '''
 class Attribute:
 	def __init__(self, name, element_list):
@@ -46,6 +51,11 @@ def readdataset(datapath):
 	return dataset
 '''
 
+class Bootstrap:
+    def __init__(self):
+        self.trainingset = []
+        self.testset = []
+
 def readdataset(datasetpath):
     dataset = []
 
@@ -62,11 +72,33 @@ def readdataset(datasetpath):
 
     return dataset
 
-
 def callexit():
     print('')
     exit()
 
+def create_bootstraplist(dataset,numberofbootstraps):
+    bootstraplist = []
+    dataset = dataset.tolist()
 
+    testsetsize = int(len(dataset) * testratio)
+
+    for i in range(0,numberofbootstraps): #every bootstrap
+        bootstrap = Bootstrap()
+        testindexlist = []
+        begintestset = randint(0,len(dataset)-testsetsize-1)
+        for j in range(begintestset,begintestset+testsetsize):
+            bootstrap.testset.append(dataset[j])
+            testindexlist.append(j)
+        bootstrap.testset = numpy.matrix(bootstrap.testset)
+        for j in range(0,len(dataset)): #every instance
+            randomindex = randint(0,len(dataset)-1)
+            while randomindex in testindexlist:
+                randomindex = randint(0,len(dataset)-1)
+            bootstrap.trainingset.append(dataset[randomindex])
+        bootstrap.trainingset = numpy.matrix(bootstrap.trainingset)
+        bootstraplist.append(bootstrap)
+
+
+    return bootstraplist
 
 # def create_tree(dataset):
