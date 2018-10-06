@@ -1,5 +1,6 @@
 import csv
-
+import numpy
+'''
 class Attribute:
 	def __init__(self, name, element_list):
 		self.name = name;
@@ -11,10 +12,6 @@ class Dataset:
 		self.attlist = [] #lista de "Attribute"
 		self.attnum = 0
 		self.datasize = 0
-
-def callexit():
-    print('')
-    exit()
 
 def readdataset(datapath):
 
@@ -47,6 +44,29 @@ def readdataset(datapath):
 	#	print(dataset.attlist[i].element_list)  # pra debug
 
 	return dataset
+'''
+
+def readdataset(datasetpath):
+    dataset = []
+
+    with open(datasetpath, 'rt') as csvfile:
+        csvline = csv.reader(csvfile, delimiter=';')
+        for row in csvline:
+            datasetrow = []
+            for i in range(0,len(row)):
+                datasetrow.append(row[i])
+            dataset.append(datasetrow)
+
+
+    dataset = numpy.matrix(dataset)
+
+    return dataset
+
+
+def callexit():
+    print('')
+    exit()
+
 
 
 # def create_tree(dataset):

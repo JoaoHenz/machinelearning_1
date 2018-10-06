@@ -14,7 +14,7 @@ random.seed(sys.argv[1])
 ntreeparameter = sys.argv[2]
 try:
     dataset = readdataset(datasetpath)
-    print('this is the dataset:',dataset)
+    print('this is the dataset:\n',dataset)
     # tree = create_tree(dataset)
 
 except Exception as e:
