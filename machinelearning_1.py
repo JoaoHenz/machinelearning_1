@@ -15,11 +15,15 @@ ntreeparameter = sys.argv[2]
 try:
     dataset = readdataset(datasetpath)
     print('this is the dataset:\n',dataset)
-    # tree = create_tree(dataset)
-
+    '''
+    att_list = numpy.asarray(dataset[0]).ravel().tolist()
+    att_list.pop()
+    tree = create_tree(dataset, att_list)
+    '''
+    
 except Exception as e:
-	print('Error!\n',e)
-	callexit()
+    print('Error!\n',e)
+    callexit()
 
 
 
