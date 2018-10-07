@@ -1,6 +1,5 @@
 import csv
 import numpy as np
-from random import *
 import random
 import math
 import pandas as pd
@@ -19,14 +18,12 @@ testratio = 0.3
 
 # O método gain_info necessita das variáveis abaixo para funcionar.
 #
+# Coluna a ser predita (-1 == ultima, na minha opiniao pode ser variavel global)
+y_column = -1
 # Carregando CSV
 data_set = pd.read_csv("dadosBenchmark_validacaoAlgoritmoAD.csv", sep = ";")
-# Separando a coluna a ser predita
-y = data_set.iloc[:, -1]
-# Dataset original sem a coluna a ser predita
-data_set = data_set.iloc[:,:-1]
 # Lista de atributos do dataset
-attribute_list = np.array(data_set.columns.values)  
+attribute_list = np.array(data_set.iloc[:,:-1].columns.values)
 
 # =============================================================================
 # Parâmetros:
@@ -37,8 +34,9 @@ attribute_list = np.array(data_set.columns.values)
 #
 # Retorno: índice do vetor attribute_list cujo ganho é o maior
 # =============================================================================
-def gain_info(attribute_list, y):
-    num_rows = data_set.shape[0]
+def gain_info(attribute_list, dataset):
+    num_rows = dataset.shape[0]
+    y = dataset.iloc[:,y_column]
     # Verifica as classes possíveis de serem preditas
     classes = np.unique(y)
     # Calcula o INFO(D) que está nos slides. Cálculo da Entropia.
@@ -52,9 +50,9 @@ def gain_info(attribute_list, y):
     # Para cada atributo:
     for attribute in attribute_list:
         # Valores possíveis da classe
-        values = np.unique(data_set[attribute])
+        values = np.unique(dataset[attribute])
         # Pega, do dataset original, somente a coluna respectiva a classe atual do for 
-        dummy_df = data_set[attribute]
+        dummy_df = dataset[attribute]
         infoD_class = 0
         # Para cada valor possível do atributo:
         for vl in values:
@@ -80,7 +78,7 @@ def gain_info(attribute_list, y):
     return np.argmax(classes_gain)
 
 #Exemplo de uso da função.
-x = gain_info(attribute_list, y)
+x = gain_info(attribute_list, data_set)
 print("Atributo de maior ganho: " + str(attribute_list[x]))
     
 
@@ -135,6 +133,7 @@ class Bootstrap:
         self.trainingset = []
         self.testset = []
 
+## da pra substituir isso por pd.read_csv("dataset.csv", sep = ";")
 def readdataset(datasetpath):
     dataset = []
 
@@ -164,15 +163,15 @@ def create_bootstraplist(dataset,numberofbootstraps):
     for i in range(0,numberofbootstraps): #every bootstrap
         bootstrap = Bootstrap()
         testindexlist = []
-        begintestset = randint(0,len(dataset)-testsetsize-1)
+        begintestset = random.randint(0,len(dataset)-testsetsize-1)
         for j in range(begintestset,begintestset+testsetsize):
             bootstrap.testset.append(dataset[j])
             testindexlist.append(j)
         bootstrap.testset = np.matrix(bootstrap.testset)
         for j in range(0,len(dataset)): #every instance
-            randomindex = randint(0,len(dataset)-1)
+            randomindex = random.randint(0,len(dataset)-1)
             while randomindex in testindexlist:
-                randomindex = randint(0,len(dataset)-1)
+                randomindex = random.randint(0,len(dataset)-1)
             bootstrap.trainingset.append(dataset[randomindex])
         bootstrap.trainingset = np.matrix(bootstrap.trainingset)
         bootstraplist.append(bootstrap)
