@@ -1,7 +1,9 @@
 import csv
-import numpy
+import numpy as np
 from random import *
 import random
+import math
+import pandas as pd
 
 class Node:
 
@@ -12,6 +14,75 @@ class Node:
     def add_child(self, child):
         self.children.append(child)
 testratio = 0.3
+
+
+
+# O método gain_info necessita das variáveis abaixo para funcionar.
+#
+# Carregando CSV
+data_set = pd.read_csv("dadosBenchmark_validacaoAlgoritmoAD.csv", sep = ";")
+# Separando a coluna a ser predita
+y = data_set.iloc[:, -1]
+# Dataset original sem a coluna a ser predita
+data_set = data_set.iloc[:,:-1]
+# Lista de atributos do dataset
+attribute_list = np.array(data_set.columns.values)  
+
+# =============================================================================
+# Parâmetros:
+#   attribute_list: lista de atributos existentes no dataframe, para calcular
+#   o ganho. Exemplo: [age, income, student]
+#   
+#   y: tipo Series (pandas), coluna y a ser predita
+#
+# Retorno: índice do vetor attribute_list cujo ganho é o maior
+# =============================================================================
+def gain_info(attribute_list, y):
+    num_rows = data_set.shape[0]
+    # Verifica as classes possíveis de serem preditas
+    classes = np.unique(y)
+    # Calcula o INFO(D) que está nos slides. Cálculo da Entropia.
+    infoD = 0
+    for cl in classes:
+        prob = len(y[y==cl]) / num_rows
+        infoD = infoD -(prob*math.log2(prob)) 
+    
+    classes_gain = np.empty_like(attribute_list)
+    i = 0
+    # Para cada atributo:
+    for attribute in attribute_list:
+        # Valores possíveis da classe
+        values = np.unique(data_set[attribute])
+        # Pega, do dataset original, somente a coluna respectiva a classe atual do for 
+        dummy_df = data_set[attribute]
+        infoD_class = 0
+        # Para cada valor possível do atributo:
+        for vl in values:
+            infoDj = 0
+            # Probabilidade de dar o valor vl para o atributo
+            prob = len(dummy_df[dummy_df==vl]) / num_rows
+            # Índices do dataframe cujo atributo tem valor vl
+            indexes = dummy_df[dummy_df==vl].index
+            # Número de linhas para esse valor de atributo
+            num_rows_vl = y[indexes].shape[0]
+            
+            # Pra cada classe possível de ser predita, calcula o InfoDj (somatório)
+            for cl in classes:
+                prob_cl = len((y[indexes])[y==cl]) / num_rows_vl
+                if prob_cl != 0:
+                    infoDj = infoDj -(prob_cl*math.log2(prob_cl))
+            infoD_class = infoD_class + prob*infoDj
+    
+        classes_gain[i] = infoD - infoD_class
+        print(attribute + ": " + str(classes_gain[i]))
+        i+=1
+    print("InfoD: " + str(infoD))        
+    return np.argmax(classes_gain)
+
+#Exemplo de uso da função.
+x = gain_info(attribute_list, y)
+print("Atributo de maior ganho: " + str(attribute_list[x]))
+    
 
 '''
 class Attribute:
@@ -76,7 +147,7 @@ def readdataset(datasetpath):
             dataset.append(datasetrow)
 
 
-    dataset = numpy.matrix(dataset)
+    dataset = np.matrix(dataset)
 
     return dataset
 
@@ -97,13 +168,13 @@ def create_bootstraplist(dataset,numberofbootstraps):
         for j in range(begintestset,begintestset+testsetsize):
             bootstrap.testset.append(dataset[j])
             testindexlist.append(j)
-        bootstrap.testset = numpy.matrix(bootstrap.testset)
+        bootstrap.testset = np.matrix(bootstrap.testset)
         for j in range(0,len(dataset)): #every instance
             randomindex = randint(0,len(dataset)-1)
             while randomindex in testindexlist:
                 randomindex = randint(0,len(dataset)-1)
             bootstrap.trainingset.append(dataset[randomindex])
-        bootstrap.trainingset = numpy.matrix(bootstrap.trainingset)
+        bootstrap.trainingset = np.matrix(bootstrap.trainingset)
         bootstraplist.append(bootstrap)
 
 
@@ -112,16 +183,16 @@ def create_bootstraplist(dataset,numberofbootstraps):
 def create_tree(dataset, att_list):
 
     new_node = Node()
-    if len(numpy.unique(numpy.asarray(dataset[:,-1]))) == 1: # saida so tem uma classe
+    if len(np.unique(np.asarray(dataset[:,-1]))) == 1: # saida so tem uma classe
         new_node.info = dataset[1:-1]
         return new_node
 
     elif len(att_list) == 0: # nao tem mais nenhum atributo no dataset
-        class_array = numpy.asarray(dataset[:,-1])
-        class_array = numpy.delete(class_array, 0) # pra tirar o header da lista
+        class_array = np.asarray(dataset[:,-1])
+        class_array = np.delete(class_array, 0) # pra tirar o header da lista
 
-        unique, counts = numpy.unique((class_array),  return_counts = True) # counts possui a frenquencia de cada classe
-        max_index, = numpy.where(counts == max(counts)) # pega o index das classe mais frenquente
+        unique, counts = np.unique((class_array),  return_counts = True) # counts possui a frenquencia de cada classe
+        max_index, = np.where(counts == max(counts)) # pega o index das classe mais frenquente
         new_node.info = max_index[0] # contem a classe mais frequente no dataset
 
     else:
@@ -129,8 +200,8 @@ def create_tree(dataset, att_list):
         new_node.info = best_att
         att_list.remove(best_att)
 
-        att_values = numpy.unique(numpy.asarray(dataset[:,att_index]))
-        att_values = numpy.delete(att_values,0) # pra tirar o header da lista
+        att_values = np.unique(np.asarray(dataset[:,att_index]))
+        att_values = np.delete(att_values,0) # pra tirar o header da lista
 
         for value in att_values:
             dataset_v = create_sub_dataset(dataset)
@@ -138,10 +209,10 @@ def create_tree(dataset, att_list):
             if len(dataset_v) == 1: # subset ta vazio
                 new_node1 = Node()
 
-                class_array = numpy.asarray(dataset[:,-1])
-                class_array = numpy.delete(class_array, 0)
-                unique, counts = numpy.unique((class_array),  return_counts = True)
-                max_index, = numpy.where(counts == max(counts))
+                class_array = np.asarray(dataset[:,-1])
+                class_array = np.delete(class_array, 0)
+                unique, counts = np.unique((class_array),  return_counts = True)
+                max_index, = np.where(counts == max(counts))
                 new_node.info1 = max_index[0] # contem a classe mais frequente no dataset
 
                 new_node.children_list.append(new_node1) # adiciona folha
