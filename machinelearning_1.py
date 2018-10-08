@@ -1,6 +1,12 @@
 import sys
 import traceback
-from generallib import *
+import random
+import pandas as pd
+import bootstrap as bs
+
+def callexit():
+    print('')
+    exit()
 
 numberofargs = 4+1
 if len(sys.argv) < numberofargs:
@@ -13,9 +19,9 @@ else:
 random.seed(sys.argv[1])
 ntreeparameter = sys.argv[2]
 try:
-    dataset = read_dataset(dataset_path)
+    dataset = pd.read_csv(dataset_path, sep = ";")
     print('this is the dataset:\n',dataset)
-    bootstrap_list = create_bootstrap_list(dataset, 3, 0.3)
+    bootstrap_list = bs.create_bootstrap_list(dataset, 3, 0.3)
     print('this is the bootstrap list:\n')
     for i in range(0,len(bootstrap_list)):
         print('\nBootstrap ',i,':\nTraining set:\n',bootstrap_list[i].training_set,'\nTest set:\n',bootstrap_list[i].test_set)
@@ -29,7 +35,5 @@ except Exception as e:
     print('\n',traceback.format_exc())
     #print('\nError on line {}:'.format(sys.exc_info()[-1].tb_lineno),'\n', type(e).__name__, e)
     callexit()
-
-
 
 callexit()
