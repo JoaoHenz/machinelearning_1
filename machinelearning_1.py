@@ -22,11 +22,6 @@ else:
 random.seed(sys.argv[1])
 ntreeparameter = sys.argv[2]
 
-
-
-
-
-
 # =============================================================================
 # Usando floresta
 # =============================================================================
@@ -54,10 +49,6 @@ y_pred = np.reshape(y_pred, (y_actual.shape))
 classifier_result = y_pred == y_actual
 accuracy = np.sum(classifier_result) / dataset_original.shape[0]
 cm = confusion_matrix(y_actual, y_pred)
-
-
-
-
 
 ## Feature Scaling
 #from sklearn.preprocessing import StandardScaler
@@ -92,6 +83,4 @@ arvore.printree()
 vector = dataset_original.iloc[:, 0:-1]
 x = arvore.classify(vector)
 
-
-
-stratifiedkcrossvalidation(dataset_original,3,'Joga')
+#stratifiedkcrossvalidation(dataset_original,3,'Joga')

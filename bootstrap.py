@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Oct  8 20:26:27 2018
-
-@author: jcdazeredo
-"""
 import numpy as np
 
 class Bootstrap(object):

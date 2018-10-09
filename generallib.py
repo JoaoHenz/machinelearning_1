@@ -16,25 +16,16 @@ def searchnext(class_list,dataset,k,classcolumn):
         i+=1
     return []
 
-<<<<<<< HEAD
-def stratifiedkcrossvalidation(dataset,num_divisions,classcolumn):
-=======
-def stratifiedkcrossvalidation(dataset, num_divisions):
->>>>>>> 1de626e3030f7420a000b19bd63c218a111abc47
+def stratifiedkcrossvalidation(dataset, num_divisions,classcloumn):
     kcross_list = []
     control_dataset = dataset
     control_dataset['JaAdicionado'] = 'nao'
-    print('control\n',control_dataset)
-
     for i in range(0,num_divisions):
         kcross_list.append([])
-
-
     class_list = []
     for i in range(0,len(dataset[classcolumn])):
         if not(dataset[classcolumn][i] in class_list):
             class_list.append(dataset[classcolumn][i])
-
     #print('numero de classes é:',len(class_list))
     k=0
     next = []
