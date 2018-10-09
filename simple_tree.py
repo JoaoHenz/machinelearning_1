@@ -27,12 +27,14 @@ class Node(object):
         self.gain = gain
 
 class Tree(object):
-    def __init__(self, y_column, dataset, attribute_list):
+    def __init__(self, y_column, dataset, attribute_list, random_att):
         self.y_column = -1
         self.dataset = dataset
         self.attribute_list = attribute_list
         self.root = None
         self.features_vector = None
+        self.random_att = random_att
+    
     
     def id3(self, dataset, attribute_list):
         num_rows = dataset.shape[0]
@@ -72,13 +74,13 @@ class Tree(object):
                 infoD_class = infoD_class + prob*infoDj
         
             classes_gain[i] = infoD - infoD_class
-    #        print(attribute + ": " + str(classes_gain[i]))
+#            print(attribute + ": " + str(classes_gain[i]))
             i+=1
-    #    print("InfoD: " + str(infoD))     
+#        print("InfoD: " + str(infoD))     
         argmax = np.argmax(classes_gain)
         return argmax, classes_gain[argmax]
     
-    def fit(self):
+    def fit(self):            
         self.root = self.create_tree(self.dataset, self.attribute_list)
         self.dataset = None
         
@@ -90,7 +92,7 @@ class Tree(object):
             new_node.set_leaf()
             return new_node
     
-        elif len(att_list) == 0: # nao tem mais nenhum atributo no dataset
+        elif att_list.shape[0] == 0: # nao tem mais nenhum atributo no dataset
             att_values, counts = np.unique(dataset.iloc[:, self.y_column], return_counts = True)
             index_max = np.argmax(counts)
             new_node.info = att_values[index_max]
@@ -98,16 +100,28 @@ class Tree(object):
             return new_node
     
         else:
-            best_att_index, best_att_gain = self.id3(dataset, att_list)
-            best_att = att_list[best_att_index]
-            new_node.info = best_att
+            if self.random_att:
+                num_pick = att_list.shape[0] ** (1/2) # raiz quadrada
+            else:
+                num_pick = att_list.shape[0] # qtd normal, sem subsampling
+            
+            num_pick = round(num_pick)
+            if num_pick == 0:
+                num_pick = 1
+            
+            random_att_list = np.random.choice(att_list, num_pick, replace = False)
+            best_att_index, best_att_gain = self.id3(dataset, random_att_list)
+            att = random_att_list[best_att_index]
+            att_index_original = np.argwhere(att_list == att)[0][0]
+            
+            new_node.info = att
             new_node.set_gain(best_att_gain)
             
-            att_values = np.unique(self.dataset.loc[:, best_att])
-            att_list = np.delete(att_list, best_att_index)
-            
+            att_values = np.unique(self.dataset.loc[:, att])               
+            att_list = np.delete(att_list, att_index_original)
+
             for value in att_values:
-                dataset_v = dataset[dataset.loc[:, best_att] == value]
+                dataset_v = dataset[dataset.loc[:, att] == value]
     
                 if dataset_v.shape[0] == 0: # subset ta vazio
                     new_node1 = Node()
@@ -168,7 +182,15 @@ class Tree(object):
             return node.info
         else:
             children = node.children_list
+            flag = 0
             for child in children:
                 if child[0] == self.features_vector.loc[0, node.info]:
                     x = self.classify_core(child[1])
+                    flag = 1
+            
+            if flag == 0:
+                return -1
             return x
+
+
+
