@@ -16,7 +16,11 @@ def searchnext(class_list,dataset,k,classcolumn):
         i+=1
     return []
 
+<<<<<<< HEAD
 def stratifiedkcrossvalidation(dataset,num_divisions,classcolumn):
+=======
+def stratifiedkcrossvalidation(dataset, num_divisions):
+>>>>>>> 1de626e3030f7420a000b19bd63c218a111abc47
     kcross_list = []
     control_dataset = dataset
     control_dataset['JaAdicionado'] = 'nao'

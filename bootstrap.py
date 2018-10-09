@@ -22,12 +22,17 @@ def create_bootstrap_list(dataset, num_bootstrap, max_ratio):
         test_ratio = np.random.uniform(0, max_ratio)
         num_pick = round(test_ratio*index_dataset.shape[0])
 
+        if num_pick == index_dataset.shape[0]:
+            num_pick = index_dataset.shape[0]-1
+
         if num_pick == 0:
             num_pick = 1
+
 
         index_test_list = np.random.choice(index_dataset, num_pick, replace = False)
 
         index_train_list = np.array([e for e in index_dataset if e not in index_test_list])
+
         dummy_list = np.random.choice(index_train_list, index_dataset.shape[0]-index_train_list.shape[0])
         index_train_list = np.append(index_train_list, dummy_list)
 

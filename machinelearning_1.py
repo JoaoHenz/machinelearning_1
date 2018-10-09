@@ -2,8 +2,9 @@ import sys
 import traceback
 import random
 import pandas as pd
+import numpy as np
 import bootstrap as bs
-from generallib import *
+from simple_tree import Tree
 
 def callexit():
     print('')
@@ -20,23 +21,76 @@ else:
 random.seed(sys.argv[1])
 ntreeparameter = sys.argv[2]
 
-# =============================================================================
-# Usando árvore simples
-# =============================================================================
-from simple_tree import Tree
 
-# Coluna a ser predita (-1 == ultima, na minha opiniao pode ser variavel global)
+
+
+
+
+# =============================================================================
+# Usando floresta
+# =============================================================================
+
+from sklearn.metrics import confusion_matrix
+from random_forest import Random_Forest
+
+# Coluna a ser predita (-1 == ultima)
 y_column = -1
 # Carregando CSV
 dataset_original = pd.read_csv("dadosBenchmark_validacaoAlgoritmoAD.csv", sep = ";")
 # Lista de atributos do dataset
 attribute_list = np.array(dataset_original.iloc[:,:-1].columns.values)
 
+# Cria floresta
+floresta = Random_Forest(y_column, dataset_original, attribute_list, 1)
+floresta.fit()
 
-print(dataset_original,'\n\n',attribute_list)
+y_pred, mode = floresta.classify(dataset_original.iloc[:, :-1])
 
-arvore = Tree(y_column, dataset_original, attribute_list)
-arvore.fit()
-arvore.print()
+y_actual = dataset_original.iloc[:, y_column]
+y_pred = np.reshape(y_pred, (y_actual.shape))
 
-stratifiedkcrossvalidation(dataset_original,3,'Joga')
+# Resultado do classificador
+classifier_result = y_pred == y_actual
+accuracy = np.sum(classifier_result) / dataset_original.shape[0]
+cm = confusion_matrix(y_actual, y_pred)
+
+
+
+
+
+## Feature Scaling
+#from sklearn.preprocessing import StandardScaler
+#sc = StandardScaler()
+#
+#string_column = 3
+#dataset_original.iloc[:, string_column] = sc.fit_transform(dataset_original.iloc[:, string_column:string_column+1])
+#dataset_original.iloc[:, string_column], bins = pd.qcut(dataset_original.iloc[:, string_column], 5, labels=False, retbins = True)
+#
+#dataset2 = pd.read_csv("/home/jcdazeredo/Dropbox/Faculdade/UFRGS/Indo/Aprendizado/dataset2.csv")
+#dataset2.iloc[:, string_column] = sc.transform(dataset2.iloc[:, string_column:string_column+1])
+#dataset2.iloc[:, string_column] = pd.qcut(dataset2.iloc[:, string_column], 5, labels=False)
+
+# =============================================================================
+# Usando árvore simples
+# =============================================================================
+
+# Coluna a ser predita (-1 == ultima)
+y_column = -1
+# Carregando CSV
+dataset_original = pd.read_csv("dadosBenchmark_validacaoAlgoritmoAD.csv", sep = ";")
+# Lista de atributos do dataset
+attribute_list = np.array(dataset_original.iloc[:,:-1].columns.values)
+
+# Cria arvore
+arvore = Tree(y_column, dataset_original, attribute_list, False)
+arvore.fit() # Após fit ele remove o dataset guardado
+# Printa Tree
+arvore.printree()
+
+# Classifica dataset
+vector = dataset_original.iloc[:, 0:-1]
+x = arvore.classify(vector)
+
+
+
+#stratifiedkcrossvalidation(dataset_original,3)
