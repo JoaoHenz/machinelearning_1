@@ -7,6 +7,7 @@ import bootstrap as bs
 from simple_tree import Tree
 import generallib as gn
 
+
 #def callexit():
 #    print('')
 #    exit()
@@ -22,11 +23,6 @@ import generallib as gn
 #random.seed(sys.argv[1])
 #ntreeparameter = sys.argv[2]
 
-
-
-
-
-
 # =============================================================================
 # Usando floresta
 # =============================================================================
@@ -39,12 +35,18 @@ y_column = 0
 
 header = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
 
+
+
 # Carregando CSV
 dataset_original = pd.read_csv("wine.csv", sep = ",", header = None)
 dataset_original.columns = header
 # Lista de atributos do dataset
 attribute_list = np.array(dataset_original.columns.values)
 attribute_list = np.delete(attribute_list, y_column)
+
+
+#gera os dataframes estratificados da k cross validation
+kcross_list = gn.stratifiedkcrossvalidation(dataset_original,3,'Joga')
 
 # Cria floresta
 floresta = Random_Forest(y_column, dataset_original.iloc[0:100, :], attribute_list, 10)
@@ -59,8 +61,6 @@ y_pred = np.reshape(y_pred, (y_actual.shape))
 classifier_result = y_pred == y_actual
 accuracy = np.sum(classifier_result) / dataset_original.shape[0]
 cm = confusion_matrix(y_actual, y_pred)
-
-
 
 
 ## Feature Scaling
@@ -128,3 +128,4 @@ cm = confusion_matrix(y_actual, y_pred)
 #dataset_original.iloc[:, 0]
 #
 #np.sum(x == dataset_original.iloc[:, 0])
+
