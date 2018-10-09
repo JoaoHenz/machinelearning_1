@@ -1,15 +1,21 @@
 import sys
 import traceback
-from generallib import *
+import random
+import pandas as pd
+import bootstrap as bs
+
+def callexit():
+    print('')
+    exit()
 
 numberofargs = 4+1
 if len(sys.argv) < numberofargs:
     print('arguments are: 1.randomseed 2.ntreeparameter 3.datasetpath 4.outputpath')
     callexit()
 if (sys.argv[3]=='-'):
-    datasetpath = 'dadosBenchmark_validacaoAlgoritmoAD.csv'
+    dataset_path = 'dadosBenchmark_validacaoAlgoritmoAD.csv'
 else:
-    datasetpath = sys.argv[3]
+    dataset_path = sys.argv[3]
 random.seed(sys.argv[1])
 ntreeparameter = sys.argv[2]
 
