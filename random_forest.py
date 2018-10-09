@@ -14,8 +14,8 @@ import numpy as np
 class Random_Forest(object):
     def __init__(self, y_column, dataset, attribute_list, num_trees):
         self.num_trees = num_trees
-        self.y_column = -1
-        self.dataset = dataset
+        self.y_column = y_column
+        self.dataset = dataset.copy()
         self.attribute_list = attribute_list
         self.bootstrap_list = None
         self.tree_list = [None]*num_trees
@@ -27,10 +27,11 @@ class Random_Forest(object):
         for i in range(self.num_trees):
             self.tree_list[i] = Tree(self.y_column, self.bootstrap_list[i].training_set, self.attribute_list, True)
             self.tree_list[i].fit()
+#            self.tree_list[i].printree()
             
         self.validation()
         print("Mean Accuracy: " + str(self.accuracy))
-#            self.tree_list[i].printree()
+        
         
     def create_bootstrap(self):
         self.bootstrap_list = bs.create_bootstrap_list(self.dataset, self.num_trees, 0.7)

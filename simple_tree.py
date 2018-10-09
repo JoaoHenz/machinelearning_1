@@ -7,7 +7,9 @@ Created on Mon Oct  8 03:22:52 2018
 """
 
 import numpy as np
+import numbers as nb
 import math
+import re
 
 class Node(object):
     def __init__(self):
@@ -28,8 +30,8 @@ class Node(object):
 
 class Tree(object):
     def __init__(self, y_column, dataset, attribute_list, random_att):
-        self.y_column = -1
-        self.dataset = dataset
+        self.y_column = y_column
+        self.dataset = dataset.copy()
         self.attribute_list = attribute_list
         self.root = None
         self.features_vector = None
@@ -86,6 +88,8 @@ class Tree(object):
         
     def create_tree(self, dataset, att_list):
         new_node = Node()
+        dataset_continuous = dataset
+        dataset = self.check_continuous(dataset)
         
         if len(np.unique(dataset.iloc[:, self.y_column])) == 1:
             new_node.info = dataset.iloc[0, self.y_column]
@@ -121,7 +125,7 @@ class Tree(object):
             att_list = np.delete(att_list, att_index_original)
 
             for value in att_values:
-                dataset_v = dataset[dataset.loc[:, att] == value]
+                dataset_v = dataset_continuous[dataset_continuous.loc[:, att] == value]
     
                 if dataset_v.shape[0] == 0: # subset ta vazio
                     new_node1 = Node()
@@ -140,13 +144,30 @@ class Tree(object):
     
         return new_node
     
+    def check_continuous(self, dataset):
+        for i  in range(0, dataset.shape[1]):
+            if self.y_column != i:
+                if isinstance(dataset.iloc[0,i], nb.Number): # checa se algum atributo eh numero
+                    sum = 0
+                    for j in range(0, dataset.shape[0]): # faz a media
+                        sum += dataset.iloc[j,i]
+                    aritm_mean = sum/dataset.shape[0]
+            
+                    for j in range(0, dataset.shape[0]): # substitui por maior q media e menor e igual q media
+                        if dataset.iloc[j,i] > aritm_mean:
+                            dataset.iloc[j,i] = ">" + "%.4f" % aritm_mean
+                        else:
+                            dataset.iloc[j,i] = "<=" + "%.4f" % aritm_mean
+        
+        return dataset
+    
     def print_tree(self, tree, tab, inicial):
         if not(inicial):
             tab += "\t"
         if(tree.leaf):
-            print(tab + tree.info + "(F)\n")
+            print(tab + str(tree.info) + "(F)\n")
         else:
-            print(tab + tree.info + "(A) - Ganho: " + "%.4f" % tree.gain)
+            print(tab + str(tree.info) + "(A) - Ganho: " + "%.4f" % tree.gain)
         tab += "\t"
         
         for filho in tree.children_list:
@@ -183,14 +204,27 @@ class Tree(object):
         else:
             children = node.children_list
             flag = 0
-            for child in children:
-                if child[0] == self.features_vector.loc[0, node.info]:
-                    x = self.classify_core(child[1])
-                    flag = 1
+            
+            row = self.features_vector.loc[0, node.info]
+            if isinstance(row, nb.Number):
+                for child in children:
+                    mean = float(re.findall(r"[-+]?\d*\.\d+|\d+", child[0])[0])
+                    
+                    if child[0].find("<=") != -1 and row <= mean:
+                        pred = self.classify_core(child[1])
+                        flag = 1
+                    
+                    elif child[0].find(">") != -1 and row > mean:
+                        pred = self.classify_core(child[1])
+                        flag = 1
+     
+            else:
+                for child in children:
+                    if child[0] == row:
+                        pred = self.classify_core(child[1])
+                        flag = 1
             
             if flag == 0:
                 return -1
-            return x
-
-
-
+            return pred
+        
