@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import bootstrap as bs
 from simple_tree import Tree
+from generallib import *
 
 def callexit():
     print('')
@@ -93,4 +94,4 @@ x = arvore.classify(vector)
 
 
 
-#stratifiedkcrossvalidation(dataset_original,3)
+stratifiedkcrossvalidation(dataset_original,3,'Joga')
