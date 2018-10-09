@@ -16,7 +16,7 @@ def searchnext(class_list,dataset,k,classcolumn):
         i+=1
     return []
 
-def stratifiedkcrossvalidation(dataset, num_divisions,classcloumn):
+def stratifiedkcrossvalidation(dataset, num_divisions,classcolumn):
     kcross_list = []
     control_dataset = dataset
     control_dataset['JaAdicionado'] = 'nao'
@@ -48,3 +48,5 @@ def stratifiedkcrossvalidation(dataset, num_divisions,classcloumn):
     for i in range(0,num_divisions):
         kcross_list[i] = pd.concat(kcross_list[i])
         print('\n\nesta é a kcross list:\n',kcross_list[i],'\n')
+
+    return kcross_list

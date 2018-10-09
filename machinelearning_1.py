@@ -83,4 +83,5 @@ arvore.printree()
 vector = dataset_original.iloc[:, 0:-1]
 x = arvore.classify(vector)
 
-#stratifiedkcrossvalidation(dataset_original,3,'Joga')
+#gera os dataframes estratificados da k cross validation
+kcross_list = stratifiedkcrossvalidation(dataset_original,3,'Joga')
