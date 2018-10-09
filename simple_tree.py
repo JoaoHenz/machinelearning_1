@@ -32,16 +32,8 @@ class Tree(object):
         self.dataset = dataset
         self.attribute_list = attribute_list
         self.root = None
+        self.features_vector = None
     
-    # =============================================================================
-    # Parâmetros:
-    #   attribute_list: lista de atributos existentes no dataframe, para calcular
-    #   o ganho. Exemplo: [age, income, student]
-    #   
-    #   y: tipo Series (pandas), coluna y a ser predita
-    #
-    # Retorno: índice do vetor attribute_list cujo ganho é o maior, e valor ganho
-    # =============================================================================
     def id3(self, dataset, attribute_list):
         num_rows = dataset.shape[0]
         y = dataset.iloc[:,self.y_column]
@@ -88,7 +80,8 @@ class Tree(object):
     
     def fit(self):
         self.root = self.create_tree(self.dataset, self.attribute_list)
-    
+        self.dataset = None
+        
     def create_tree(self, dataset, att_list):
         new_node = Node()
         
@@ -146,11 +139,36 @@ class Tree(object):
             print(tab + "-> " + str(filho[0]))
             self.print_tree(filho[1], tab, False)
     
-    def print(self):
+    def printree(self):
         print("######## PRINTANDO ARVORE ########\n\n")
         self.print_tree(self.root, "", True)
         print("A = Atributo")
         print("F = Folha")
     
-    
+    def classify(self, dataset):
+        num_rows = dataset.shape[0]
+        y_pred = []
+        
+        for i in range(num_rows):
+            y_pred.append(self.classify_single(dataset.iloc[i:i+1, :]))
             
+        return np.array(y_pred)
+
+    def classify_single(self, features_vector):
+        features_vector = features_vector.reset_index(drop = True)
+        self.features_vector = features_vector
+        
+        resultado = self.classify_core(self.root)
+        
+        self.features_vector = None
+        return resultado
+
+    def classify_core(self, node):
+        if node.leaf:
+            return node.info
+        else:
+            children = node.children_list
+            for child in children:
+                if child[0] == self.features_vector.loc[0, node.info]:
+                    x = self.classify_core(child[1])
+            return x
