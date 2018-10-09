@@ -3,6 +3,7 @@ import traceback
 import random
 import pandas as pd
 import bootstrap as bs
+from generallib import *
 
 def callexit():
     print('')
@@ -38,4 +39,4 @@ arvore = Tree(y_column, dataset_original, attribute_list)
 arvore.fit()
 arvore.print()
 
-stratifiedkcrossvalidation(dataset_original,3)
+stratifiedkcrossvalidation(dataset_original,3,'Joga')

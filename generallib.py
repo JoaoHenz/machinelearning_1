@@ -5,14 +5,18 @@ import math
 import pandas as pd
 
 
-def searchnext(class_list,dataset,k):
+def searchnext(class_list,dataset,k,classcolumn):
     i=0
     while i<len(dataset):
-        if dataset['JaAdicionado'][i] == 'nao' and dataset['Joga'][i] == class_list[k]:
-            return dataset[i]
-    return None
+        if dataset['JaAdicionado'][i] == 'nao' and dataset[classcolumn][i] == class_list[k]:
+            dataset['JaAdicionado'][i] = 'sim'
+            next = dataset.iloc[[i]]
+            next = next.loc[:,:classcolumn]
+            return next
+        i+=1
+    return []
 
-def stratifiedkcrossvalidation(dataset,num_divisions):
+def stratifiedkcrossvalidation(dataset,num_divisions,classcolumn):
     kcross_list = []
     control_dataset = dataset
     control_dataset['JaAdicionado'] = 'nao'
@@ -23,24 +27,29 @@ def stratifiedkcrossvalidation(dataset,num_divisions):
 
 
     class_list = []
-    for i in range(0,len(dataset['Joga'])):
-        if not(dataset['Joga'][i] in class_list):
-            class_list.append(dataset['Joga'][i])
+    for i in range(0,len(dataset[classcolumn])):
+        if not(dataset[classcolumn][i] in class_list):
+            class_list.append(dataset[classcolumn][i])
 
     #print('numero de classes é:',len(class_list))
     k=0
-    next = None
+    next = []
     for i in range(0,len(dataset)):
         j= 0
         while j < num_divisions and i < len(dataset):
-            if k>len(class_list):
+            if k>=len(class_list):
                 k = 0
-            if next!= None:
-                del next
-            while next == None:
-                next = searchnext(class_list,dataset,k)
-                if next == None:
+            if len(next)!=0:
+                next = []
+            while len(next)==0 and len(class_list)>0:
+                next = searchnext(class_list,dataset,k,classcolumn)
+                if len(next)==0:
                     del class_list[k]
-            kcross_list[j].append(searchnext(class_list,dataset,k))
+            if len(next)>0:
+                print(next)
+                kcross_list[j].append(next)
             k+=1
             j+=1
+    for i in range(0,num_divisions):
+        kcross_list[i] = pd.concat(kcross_list[i])
+        print('\n\nesta é a kcross list:\n',kcross_list[i],'\n')
