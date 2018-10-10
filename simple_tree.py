@@ -118,13 +118,8 @@ class Tree(object):
             att_list = np.delete(att_list, att_index_original)
 
             for value in att_values:
-<<<<<<< HEAD
                 dataset_v = dataset_continuous[dataset_continuous.loc[:, att] == value]
-    
-=======
-                dataset_v = dataset[dataset.loc[:, att] == value]
 
->>>>>>> e170207a295591543b6fcf576f39c76d5552923b
                 if dataset_v.shape[0] == 0: # subset ta vazio
                     new_node1 = Node()
 
@@ -141,7 +136,6 @@ class Tree(object):
                     new_node.children_list.append(pair)
 
         return new_node
-<<<<<<< HEAD
     
     def check_continuous(self, dataset):
         for i  in range(0, dataset.shape[1]):
@@ -160,9 +154,6 @@ class Tree(object):
         
         return dataset
     
-=======
-
->>>>>>> e170207a295591543b6fcf576f39c76d5552923b
     def print_tree(self, tree, tab, inicial):
         if not(inicial):
             tab += "\t"
@@ -228,14 +219,4 @@ class Tree(object):
             if flag == 0:
                 return -1
             return pred
-        
-=======
-            for child in children:
-                if child[0] == self.features_vector.loc[0, node.info]:
-                    x = self.classify_core(child[1])
-                    flag = 1
-
-            if flag == 0:
-                return -1
-            return x
->>>>>>> e170207a295591543b6fcf576f39c76d5552923b
+    
