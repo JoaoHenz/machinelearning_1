@@ -121,6 +121,7 @@ def train_kfold(k, y_column_name, y_column_number, dataset, attribute_list, num_
         # Resultado do classificador
         classifier_result = y_pred == y_actual
         accuracy = np.sum(classifier_result) / y_actual.shape[0]
+        print("Parcial Accuracy: " + str("%.3f" % accuracy))
         accuracy_list.append(accuracy)
         cm = confusion_matrix(y_actual, y_pred)
         cm_list.append(cm)
