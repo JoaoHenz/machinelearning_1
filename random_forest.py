@@ -30,11 +30,10 @@ class Random_Forest(object):
 #            self.tree_list[i].printree()
             
         self.validation()
-        print("Mean Accuracy: " + str(self.accuracy))
         
         
     def create_bootstrap(self):
-        self.bootstrap_list = bs.create_bootstrap_list(self.dataset, self.num_trees, 0.7)
+        self.bootstrap_list = bs.create_bootstrap_list(self.dataset, self.num_trees, 0.6)
   
     def validation(self):
         accuracy = 0
@@ -53,7 +52,7 @@ class Random_Forest(object):
         
         # Faz a predição de todas as árvores para o mesmo dataset
         for i in range(self.num_trees):
-            predictions[i] = self.tree_list[i].classify(self.dataset)
+            predictions[i] = self.tree_list[i].classify(dataset)
             
         predictions = np.array(predictions)
         

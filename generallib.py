@@ -1,9 +1,8 @@
-import csv
-import numpy as np
-import random
-import math
 import pandas as pd
-import numbers as nb
+import numpy as np
+import math
+from sklearn.metrics import confusion_matrix
+from random_forest import Random_Forest
 
 def search_next(class_list,dataset,k,classcolumn):
     i=0
@@ -18,25 +17,26 @@ def search_next(class_list,dataset,k,classcolumn):
 
 def stratified_kcross_validation(dataset, num_divisions, classcolumn):
     kcross_list = []
-    dataset['JaAdicionado'] = 'nao'
+    dataset_copy = dataset.copy()
+    dataset_copy['JaAdicionado'] = 'nao'
     for i in range(0,num_divisions):
         kcross_list.append([])
     class_list = []
-    for i in range(0,len(dataset[classcolumn])):
-        if not(dataset[classcolumn][i] in class_list):
-            class_list.append(dataset[classcolumn][i])
+    for i in range(0,len(dataset_copy[classcolumn])):
+        if not(dataset_copy[classcolumn][i] in class_list):
+            class_list.append(dataset_copy[classcolumn][i])
     #print('numero de classes é:',len(class_list))
     k = 0
     next_i = []
-    for i in range(0,len(dataset)):
+    for i in range(0,len(dataset_copy)):
         j= 0
-        while j < num_divisions and i < len(dataset):
+        while j < num_divisions and i < len(dataset_copy):
             if k>=len(class_list):
                 k = 0
             if len(next_i)!=0:
                 next_i = []
             while len(next_i)==0 and len(class_list)>0:
-                next_i = search_next(class_list, dataset ,k,classcolumn)
+                next_i = search_next(class_list, dataset_copy ,k,classcolumn)
                 if len(next_i)==0:
                     del class_list[k]
                     k -= 1
@@ -47,90 +47,90 @@ def stratified_kcross_validation(dataset, num_divisions, classcolumn):
             j+=1
     for i in range(0,num_divisions):
         kcross_list[i] = pd.concat(kcross_list[i])
-        kcross_list[i] = kcross_list[i].iloc[:, :-1]
+        kcross_list[i] = kcross_list[i].iloc[:, :-1].reset_index(drop = True)
+        
 #        print('\n\nesta é a kcross list:\n',kcross_list[i],'\n')
 
     return kcross_list
 
 
+def calcula_f1measure(matrix,beta):
+    precision = []
+    recall = []
+    truepositive = []
 
+    for i in range(0,len(matrix)):
+        for j in range(0,len(matrix[0])):
+            if i == j:
+                truepositive.append(matrix[i][j])
 
+    for i in range(0,len(truepositive)):
+        precision.append(truepositive[i]/sum(matrix[i,:]))
+        recall.append(truepositive[i]/sum(matrix[:,i]))
 
+    for i in range(0,len(recall)):
+        if math.isnan(recall[i]):
+            recall[i]=1
 
+    for i in range(0,len(precision)):
+        if math.isnan(precision[i]):
+            precision[i]=1
 
+    recall = sum(recall)/len(recall)
+    precision = sum(precision)/len(precision)
 
+    f1_measure = 2 * (precision * recall)/(precision + recall)
+    if math.isnan(f1_measure):
+        f1_measure=1
+    return f1_measure
 
+def f1measure_emlista(matrix_list, beta):
+    f1measure_mediatotal = []
+    for i in range(0,len(matrix_list)):
+        f1measure_mediatotal.append(calcula_f1measure(matrix_list[i],beta))
+#        print('olha isso: ',calcula_f1measure(matrix_list[i],beta))
+    return (sum(f1measure_mediatotal)/len(f1measure_mediatotal))
 
+def mean_acc(acc_list):
+    return (sum(acc_list)/len(acc_list))
+    
+def train_kfold(k, y_column_name, y_column_number, dataset, attribute_list, num_tree):
+    folds_original = stratified_kcross_validation(dataset, k, y_column_name)
+    cm_list = []
+    accuracy_list = []
+    print("###### K-FOLD RUNNING ######")
+    print()
+    for i in range(k):
+        folds = folds_original.copy()
+        teste = folds.pop(i)
+        teste = teste.reset_index(drop = True)
+        treino = folds
+        treino = pd.concat(treino).reset_index(drop = True)
+        floresta = Random_Forest(y_column_number, treino, attribute_list, num_tree)
+        print()
+        print("###### RANDOM FOREST TRAINING - " + str(i+1) + "/" + str(k) + " folds ######")
+        floresta.fit()
+        
+        print("###### RANDOM FOREST TESTING ######")
+        print()
+        y_pred, mode = floresta.classify(teste)
+        
+        y_actual = teste.iloc[:, y_column_number]
+        y_pred = np.reshape(y_pred, (y_actual.shape))
+        
+        # Resultado do classificador
+        classifier_result = y_pred == y_actual
+        accuracy = np.sum(classifier_result) / y_actual.shape[0]
+        accuracy_list.append(accuracy)
+        cm = confusion_matrix(y_actual, y_pred)
+        cm_list.append(cm)
+    
+    return accuracy_list, cm_list
 
+def create_stringlist(numberofstrings):
+    stringlist = []
 
+    for i in range(0, numberofstrings):
+        stringlist.append(str(chr(65+i)))
 
-
-
-
-
-
-
-#def searchnext(class_list, dataset, k, classcolumn):
-#    i = 0
-#    while i < dataset.shape[0]:
-##        print("i: " + str(i))
-##        print("classcolumn: " + str(classcolumn))
-##        print("k = " + str(k))
-##        print("class_list[k] tamanho = " + str(len(class_list)))
-##        print("class_list[k]" + str(class_list[k]))
-##        print("dataset[jaAdicionado][i]\n")
-##        print(dataset['JaAdicionado'][i])
-##        print("dataset.iloc[i, classcolum]\n\n")
-##        print(dataset.iloc[i, classcolumn])
-##        print("class_list")
-##        print(class_list)
-##        print()
-##        print()
-#        if dataset['JaAdicionado'][i] == 'nao' and dataset.iloc[i, classcolumn] == class_list[k]:
-#            dataset['JaAdicionado'][i] = 'sim'
-#            next_i = dataset.iloc[[i]]
-#            return next_i
-#        i+=1
-#    return []
-#    
-#def stratifiedkcrossvalidation(dataset, num_divisions,classcolumn):
-#    kcross_list = []
-#    control_dataset = dataset
-#    control_dataset['JaAdicionado'] = 'nao'
-#    
-#    for i in range(0, num_divisions):
-#        kcross_list.append([])
-#    
-#    class_list = np.unique(dataset.iloc[:, classcolumn])
-#    k = 0
-#    next_i = []
-#    
-#    for i in range(0, dataset.shape[0]):
-#        j= 0
-#        while j < num_divisions and i < dataset.shape[0]:
-#            print("inicio while, k = " + str(k))
-#            if k >= len(class_list):
-#                k = 0
-#                
-#            if len(next_i) != 0:
-#                next_i = []
-#                
-#            while len(next_i) == 0 and len(class_list) > 0:
-#                next_i = searchnext(class_list, dataset, k, classcolumn)
-#                
-#                if len(next_i)==0:
-#                    class_list = np.delete(class_list, k)
-#                    k -= 1
-#                    
-#            if len(next_i) > 0:
-##                print(next_i)
-#                kcross_list[j].append(next_i)
-#            
-#            k+=1
-#            j+=1
-#            
-#    for i in range(0, num_divisions):
-#        kcross_list[i] = pd.concat(kcross_list[i])
-##        print('\n\nesta é a kcross list:\n',kcross_list[i],'\n')
-
-    return kcross_list
+    return stringlist

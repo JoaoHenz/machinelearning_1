@@ -1,95 +1,55 @@
 import pandas as pd
 import numpy as np
-from simple_tree import Tree
 import generallib as gl
+import click
 
 
-# =============================================================================
-# Usando floresta
-# =============================================================================
+@click.command()
+@click.option('--input_file', prompt = 'Input CSV', help = 'Input CSV.')
+@click.option('--no_header', is_flag = True, help = 'If CSV have no header.')
+@click.option('--separator', default = ',', help = 'CSV Separator. Inside commas.')
+@click.option('--k', default = 10, help='K for K-Fold.')
+@click.option('--pred_col', default = 0, prompt = 'Column for Prediction', help = 'Column for Prediction, starting from zero.')
+@click.option('--n_trees', default = 10, help = 'Number of Trees on each Forest')
 
-from sklearn.metrics import confusion_matrix
-from random_forest import Random_Forest
+def am1(input_file, no_header, separator, k, pred_col, n_trees):
+    # =============================================================================
+    # Pre - Processing
+    # =============================================================================
+    try:
+        if k < 2:
+            k = 2
+        y_column = pred_col
+        if no_header:
+            dataset_original = pd.read_csv(input_file, sep = separator, header = None)
+            header = gl.create_stringlist(dataset_original.shape[1])
+            dataset_original.columns = header
+        else:
+            dataset_original = pd.read_csv(input_file, sep = separator)
+        
+        header = dataset_original.columns.values
+        y_column_name = header[y_column]
+        
+        # Lista de atributos do dataset
+        attribute_list = np.array(dataset_original.columns.values)
+        attribute_list = np.delete(attribute_list, y_column)
+        
+        acc, cm = gl.train_kfold(k, y_column_name, y_column, dataset_original, attribute_list, n_trees)
+        
+        f1_measure = gl.f1measure_emlista(np.array(cm), 1)
+        print("F1 Measure: %.3f" % f1_measure)
+        mean_acc = gl.mean_acc(acc)
+        print("Accuracy: " + str("%.3f" % mean_acc))
+        
+    except:
+        print("ERROR")
 
-
-
-# =============================================================================
-# Pre - Processing
-# =============================================================================
-# Coluna a ser predita
-y_column = 0
-
-header = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"]
-
-# Carregando CSV
-dataset_original = pd.read_csv("wine.csv", sep = ",", header = None)
-dataset_original.columns = header
-
-header = dataset_original.columns.values
-x = gl.stratified_kcross_validation(dataset_original,3, header[0])
-
-# Lista de atributos do dataset
-attribute_list = np.array(dataset_original.columns.values)
-attribute_list = np.delete(attribute_list, y_column)
-
-
-
-
-# =============================================================================
-# Random Forest
-# =============================================================================
-floresta = Random_Forest(y_column, dataset_original.iloc[0:100, :], attribute_list, 10)
-floresta.fit()
-
-y_pred, mode = floresta.classify(dataset_original.iloc[100:, :])
-
-y_actual = dataset_original.iloc[:, y_column]
-y_pred = np.reshape(y_pred, (y_actual.shape))
-
-# Resultado do classificador
-classifier_result = y_pred == y_actual
-accuracy = np.sum(classifier_result) / dataset_original.shape[0]
-cm = confusion_matrix(y_actual, y_pred)
+if __name__ == '__main__':
+    am1()
 
 
-
-
-
-
-
-
-
-
-# =============================================================================
-# Pre - Processing
-# =============================================================================
-# Coluna a ser predita
-y_column = 0
-
-# Carregando CSV
-dataset_original = pd.read_csv("dadosBenchmark_validacaoAlgoritmoAD.csv", sep = ";")
-
-header = dataset_original.columns.values
-x = gl.stratified_kcross_validation(dataset_original,3, header[4])
-
-# Lista de atributos do dataset
-attribute_list = np.array(dataset_original.columns.values)
-attribute_list = np.delete(attribute_list, y_column)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    
 
 
 
